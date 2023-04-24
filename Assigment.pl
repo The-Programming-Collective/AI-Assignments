@@ -14,23 +14,23 @@ replace_element(List, Index, OldValue, NewValue, Result) :-
 
 
 %Creates initial state space with bombs
-createSpace([X|[Y|_]],Locations,Space) :-
+create_space([X|[Y|_]],Locations,Space) :-
     %length of the list
     Len is X*Y,
     length(TempSpace, Len),
     findall('-', between(1, Len, _), TempSpace),
-    placeBombs(Locations,Y,TempSpace,Space),!.
+    place_bombs(Locations,Y,TempSpace,Space),!.
 
-
-placeBombs([],_,Space,Space).
-placeBombs([ [X|[Y|_] ] |T],YCoord,TempSpace,Space):-
+%places the bombs
+place_bombs([],_,Space,Space).
+place_bombs([ [X|[Y|_] ] |T],YCoord,TempSpace,Space):-
     %location of the bomb
     Loc is ((X-1)*YCoord)+(Y-1),
     replace_element(TempSpace,Loc,'-','X',TempTempSpace),
-    placeBombs(T,YCoord,TempTempSpace,Space).
+    place_bombs(T,YCoord,TempTempSpace,Space).
 
 
-placeDomino(State,Size,Next):-
+place_domino(State,Size,Next):-
     left(Size, State, Next); right(Size, State, Next);
     up(Size, State, Next); down(Size, State, Next).
 
@@ -67,52 +67,45 @@ down([_|[Y|_]], State, Next):-
     replace_element(NewState, Location1, _, 'D', Next).
 
 
-isGoal(State,Size):-
-    not(placeDomino(State,Size,_)).
+%if no more dominos can be places then its goal
+is_goal(State,Size):-
+    not(place_domino(State,Size,_)).
 
 
 search(Open, _, Size, CurrentState):-
-    getState(Open, CurrentState, _),
-    isGoal(CurrentState,Size).
+    get_state(Open, CurrentState, _),
+    is_goal(CurrentState,Size).
 
 
 search(Open, Closed, Size, Goal):-
-    getState(Open, CurrentNode, TmpOpen),
-    getAllValidChildren(CurrentNode, Size, TmpOpen, Closed, Children),
-    addChildren(Children, TmpOpen, NewOpen),
+    get_state(Open, CurrentNode, TmpOpen),
+    get_all_valid_children(CurrentNode, Size, TmpOpen, Closed, Children),
+    add_children(Children, TmpOpen, NewOpen),
     append(Closed, CurrentNode, NewClosed),
     search(NewOpen, NewClosed, Size, Goal).
 
 
-getState([CurrentNode|Rest], CurrentNode, Rest).
+get_state([CurrentNode|Rest], CurrentNode, Rest).
 
 
-getAllValidChildren(Node, Size, Open, Closed, Children):-
-    findall(Next, getNextState(Node, Size, Open, Closed, Next), Children).
+get_all_valid_children(Node, Size, Open, Closed, Children):-
+    findall(Next, get_next_state(Node, Size, Open, Closed, Next), Children).
 
 
-getNextState(State, Size, Open, Closed, Next):-
-    placeDomino(State, Size, Next),
+get_next_state(State, Size, Open, Closed, Next):-
+    place_domino(State, Size, Next),
     not(member(Next, Open)),
     not(member(Next, Closed)),
-    isOkay(Next).
+    is_okay(Next).
 
 
-addChildren(Children, Open, NewOpen):-
+add_children(Children, Open, NewOpen):-
     append(Open, Children, NewOpen).
 
 
-isOkay(_):-true.
+is_okay(_):-true.
 
 
-printSolution([State, null],_):-
-    write(State), nl.
-printSolution([State, Parent], Closed):-
-    member([Parent, GrandParent], Closed),
-    printSolution([Parent, GrandParent], Closed),
-    write(State), nl.
-
-
-init(Size,BombLocations,Goal):-
-    createSpace(Size,BombLocations,InitialState),
+init_informed(Size,BombLocations,Goal):-
+    create_space(Size,BombLocations,InitialState),
     search([InitialState],[],Size,Goal).
