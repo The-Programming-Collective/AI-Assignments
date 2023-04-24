@@ -1,11 +1,7 @@
 % X = bomb
-% D = domino
+% V = domino vertical (loc-1)
+% H = domino horizontal (loc+y)
 % - = empty
-
-% up is loc-y
-% down is loc+y
-% right is loc+1
-% left is loc-1
 
 
 replace_element(List, Index, OldValue, NewValue, Result) :-
@@ -18,53 +14,38 @@ create_space([X|[Y|_]],Locations,Space) :-
     %length of the list
     Len is X*Y,
     length(TempSpace, Len),
-    findall('-', between(1, Len, _), TempSpace),
+    findall("-", between(1, Len, _), TempSpace),
     place_bombs(Locations,Y,TempSpace,Space),!.
+
 
 %places the bombs
 place_bombs([],_,Space,Space).
 place_bombs([ [X|[Y|_] ] |T],YCoord,TempSpace,Space):-
     %location of the bomb
     Loc is ((X-1)*YCoord)+(Y-1),
-    replace_element(TempSpace,Loc,'-','X',TempTempSpace),
+    replace_element(TempSpace,Loc,"-","X",TempTempSpace),
     place_bombs(T,YCoord,TempTempSpace,Space).
 
 
 place_domino(State,Size,Next):-
-    left(Size, State, Next); right(Size, State, Next);
-    up(Size, State, Next); down(Size, State, Next).
+    vertical(Size, State, Next); 
+    horizontal(Size, State, Next).
 
 
-left(_,State, Next):-
-    nth0(Location,State,'-'),
+vertical(_,State, Next):-
+    nth0(Location,State,"-"),
     Location1 is Location-1,
-    nth0(Location1, State, '-'),
-    replace_element(State, Location, _, 'D', NewState),
-    replace_element(NewState, Location1, _, 'D', Next).
+    nth0(Location1, State, "-"),
+    replace_element(State, Location, _, "V", NewState),
+    replace_element(NewState, Location1, _, "V", Next).
 
 
-right(_, State, Next):-
-    nth0(Location,State,'-'),
-    Location1 is Location+1,
-    nth0(Location1, State, '-'),
-    replace_element(State, Location, _, 'D', NewState),
-    replace_element(NewState, Location1, _, 'D', Next).
-
-
-up([_|[Y|_]], State, Next):-
-    nth0(Location,State,'-'),
-    Location1 is Location-Y,
-    nth0(Location1, State, '-'),
-    replace_element(State, Location, _, 'D', NewState),
-    replace_element(NewState, Location1, _, 'D', Next).
-
-
-down([_|[Y|_]], State, Next):-
-    nth0(Location,State,'-'),
+horizontal([_|[Y|_]], State, Next):-
+    nth0(Location,State,"-"),
     Location1 is Location+Y,
-    nth0(Location1, State, '-'),
-    replace_element(State, Location, _, 'D', NewState),
-    replace_element(NewState, Location1, _, 'D', Next).
+    nth0(Location1, State, "-"),
+    replace_element(State, Location, _, "H", NewState),
+    replace_element(NewState, Location1, _, "H", Next).
 
 
 %if no more dominos can be places then its goal
@@ -106,6 +87,7 @@ add_children(Children, Open, NewOpen):-
 is_okay(_):-true.
 
 
-init_informed(Size,BombLocations,Goal):-
+init_uninformed(Size,BombLocations,Goal):-
     create_space(Size,BombLocations,InitialState),
     search([InitialState],[],Size,Goal).
+
