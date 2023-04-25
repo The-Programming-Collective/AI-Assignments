@@ -9,12 +9,16 @@ def logic(type,SSS,BombsLocations)->list:
     prolog = Prolog()
     prolog.consult(file_name)
     init_uninformed = Functor("init_uninformed", 3)
-    # init_informed = Functor("init_informed",3)
+    init_informed = Functor("init_informed",3)
         
     Goal = Variable()
+    
     if type=="uninformed":
         q = Query(init_uninformed(SSS,BombsLocations,Goal))
 
+    elif type=="informed":
+        q = Query(init_informed(SSS,BombsLocations,Goal))
+        
     OutputList = []
 
     while q.nextSolution():
@@ -65,7 +69,7 @@ class window():
         buttonNext = tk.Button(self.Frame1,text="Next",border=0,bg="#7B6585",foreground="white",width=15,command=self.Update)
         buttonNext.grid(row = 1, column=3,padx=10)
 
-        buttonInformed = tk.Button(self.Frame1,text="informed",border=0,bg="#7B6585",foreground="white",width=15)
+        buttonInformed = tk.Button(self.Frame1,text="informed",border=0,bg="#7B6585",foreground="white",width=15,command=self.informed)
         buttonInformed.grid(row = 2, column=3,padx=10)
 
         self.Frame1.pack(fill="both",side="top")
@@ -76,8 +80,17 @@ class window():
         self.window.mainloop()
         
         
-    def get_Data(self,s):
+    def get_Data(self):
         try:
+            
+            self.currResult=0
+            s = self.entrySSS.get()
+            self.SSS = self.get_Data(s)
+            s = self.entryB1.get()
+            self.B1 = self.get_Data(s)
+            s = self.entryB2.get()
+            self.B2 = self.get_Data(s)
+            
             i = 0
             while s[i]==' ':
                 s=s[i+1:]
@@ -85,26 +98,21 @@ class window():
             print(my_list)
             if(len(my_list)<2 or len(my_list)>2 or my_list[0]<1 or my_list[1]<1):
                 raise
+            if self.SSS==False or self.B1==False or self.B2==False:
+                raise
         except:
             messagebox.showerror("Error", s+" is not allowed")
             return False
         return my_list
 
     def Uninformed(self):
-        self.currResult=0
-        s = self.entrySSS.get()
-        self.SSS = self.get_Data(s)
-        s = self.entryB1.get()
-        B1 = self.get_Data(s)
-        s = self.entryB2.get()
-        B2 = self.get_Data(s)
+        self.get_Data()   
+        self.Results = logic("uninformed",self.SSS,[self.B1,self.B2])
+        self.Update()
         
-        if self.SSS==False or B1==False or B2==False:
-            return
-        
-        BombsLocations = [B1,B2]
-        self.Results = logic("uninformed",self.SSS,BombsLocations)
-        print(self.Results)
+    def informed(self):
+        self.get_Data()   
+        self.Results = logic("informed",self.SSS,[self.B1,self.B2])
         self.Update()
     
     def Update(self):
