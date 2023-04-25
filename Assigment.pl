@@ -32,9 +32,9 @@ place_domino(State,Size,Next):-
     horizontal(Size, State, Next).
 
 
-vertical(_,State, Next):-
+vertical([_|[Y|_]],State, Next):-
     nth0(Location,State,"-"),
-    Location1 is Location-1,
+    Location1 is Location+Y,
     nth0(Location1, State, "-"),
     replace_element(State, Location, _, "V", NewState),
     replace_element(NewState, Location1, _, "V", Next).
@@ -42,7 +42,8 @@ vertical(_,State, Next):-
 
 horizontal([_|[Y|_]], State, Next):-
     nth0(Location,State,"-"),
-    Location1 is Location+Y,
+    not(0 is Location mod Y),
+    Location1 is Location-1,
     nth0(Location1, State, "-"),
     replace_element(State, Location, _, "H", NewState),
     replace_element(NewState, Location1, _, "H", Next).
