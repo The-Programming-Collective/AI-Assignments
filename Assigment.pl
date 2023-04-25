@@ -54,19 +54,21 @@ is_goal(State,Size):-
     not(place_domino(State,Size,_)).
 
 
-search(Open, _, Size, CurrentState):-
-    get_state(Open, CurrentState, _),
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+uninformed_search(Open, _, Size, [CurrentState,Parent]):-
+    get_state(Open,[CurrentState,Parent], _),
     is_goal(CurrentState,Size).
 
 
-search(Open, Closed, Size, Goal):-
+uninformed_search(Open, Closed, Size, Goal):-
     get_state(Open, CurrentNode, TmpOpen),
     get_all_valid_children(CurrentNode, Size, TmpOpen, Closed, Children),
     add_children(Children, TmpOpen, NewOpen),
-    append(Closed, CurrentNode, NewClosed),
-    search(NewOpen, NewClosed, Size, Goal).
+    append(Closed, [CurrentNode], NewClosed),
+    uninformed_search(NewOpen, NewClosed, Size, Goal).
 
 
+%% BFS
 get_state([CurrentNode|Rest], CurrentNode, Rest).
 
 
@@ -74,10 +76,10 @@ get_all_valid_children(Node, Size, Open, Closed, Children):-
     findall(Next, get_next_state(Node, Size, Open, Closed, Next), Children).
 
 
-get_next_state(State, Size, Open, Closed, Next):-
+get_next_state([State,_], Size, Open, Closed, [Next,State]):-
     place_domino(State, Size, Next),
-    not(member(Next, Open)),
-    not(member(Next, Closed)),
+    not(member([Next,_], Open)),
+    not(member([Next,_], Closed)),
     is_okay(Next).
 
 
@@ -90,5 +92,37 @@ is_okay(_):-true.
 
 init_uninformed(Size,BombLocations,Goal):-
     create_space(Size,BombLocations,InitialState),
-    search([InitialState],[],Size,Goal).
+    uninformed_search([[InitialState,[]]],[],Size,Goal).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% informed_search(Open, _, Size, CurrentState):-
+%     get_state(Open, CurrentState, _),
+%     is_goal(CurrentState,Size).
 
+
+% informed_search(Open, Closed, Size, Goal):-
+%     get_best_state(Open, CurrentNode, TmpOpen),
+%     get_all_valid_children_informed(CurrentNode, Size, TmpOpen, Closed, Goal, Children),
+%     add_children(Children, TmpOpen, NewOpen),
+%     append(Closed, CurrentNode, NewClosed),
+%     uninformed_search(NewOpen, NewClosed, Size, Goal).
+
+
+% get_best_state(Open, Node, NewOpen):-
+
+
+% get_all_valid_children_informed(Node, Size, Open, Closed, Goal, Children):-
+%     findall(Next, get_next_state_informed(Node, Size, Open, Closed, Goal, Next), Children).
+
+
+
+% get_next_state(State, Size, Open, Closed, Next):-
+%     place_domino(State, Size, Next),
+%     not(member(Next, Open)),
+%     not(member(Next, Closed)),
+%     is_okay(Next).
+
+
+
+% init_informed(Size,BombLocations,Goal):-
+%     create_space(Size,BombLocations,InitialState),
+%     informed_search([InitialState],[],Size,Goal).

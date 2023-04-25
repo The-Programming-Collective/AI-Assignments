@@ -22,7 +22,7 @@ def logic(type,SSS,BombsLocations)->list:
     OutputList = []
 
     while q.nextSolution():
-        bytelist = Goal.get_value()
+        bytelist = Goal.get_value()[0]
         stringlist=[x.decode('utf-8') for x in bytelist]
         OutputList.append(stringlist)
     q.closeQuery()
@@ -32,6 +32,8 @@ def logic(type,SSS,BombsLocations)->list:
 class window():
     def __init__(self):
         self.SSS = []
+        self.B1 = []
+        self.B2 = []
         self.Results = []
         self.currResult=0
         # Create the window
@@ -79,35 +81,34 @@ class window():
 
         self.window.mainloop()
         
+    def parce_data(self,s):
+        s = s.get()
+        i = 0
+        while s[i]==' ':
+            s=s[i+1:]
+        my_list = [int(x) for x in re.split(r"\D+", s)]
+        if(len(my_list)<2 or len(my_list)>2 or my_list[0]<1 or my_list[1]<1):
+            raise
+        return my_list
         
     def get_Data(self):
-        try:
-            
+        try: 
             self.currResult=0
-            s = self.entrySSS.get()
-            self.SSS = self.get_Data(s)
-            s = self.entryB1.get()
-            self.B1 = self.get_Data(s)
-            s = self.entryB2.get()
-            self.B2 = self.get_Data(s)
             
-            i = 0
-            while s[i]==' ':
-                s=s[i+1:]
-            my_list = [int(x) for x in re.split(r"\D+", s)]
-            print(my_list)
-            if(len(my_list)<2 or len(my_list)>2 or my_list[0]<1 or my_list[1]<1):
-                raise
-            if self.SSS==False or self.B1==False or self.B2==False:
-                raise
+            self.SSS = self.parce_data(self.entrySSS)
+            self.B1 = self.parce_data(self.entryB1)
+            self.B2= self.parce_data(self.entryB2)
+            print(self.entrySSS.get())
         except:
-            messagebox.showerror("Error", s+" is not allowed")
+            messagebox.showerror("Error")
             return False
-        return my_list
+        return
 
     def Uninformed(self):
-        self.get_Data()   
-        self.Results = logic("uninformed",self.SSS,[self.B1,self.B2])
+        self.get_Data()
+        bombList=[self.B1,self.B2]
+        self.Results = logic("uninformed",self.SSS,bombList)
+        print(self.Results)
         self.Update()
         
     def informed(self):
@@ -116,6 +117,10 @@ class window():
         self.Update()
     
     def Update(self):
+        if self.currResult==len(self.Results):
+            messagebox.showinfo("info","this is the last solution")
+            return
+        
         for item in self.Frame2.winfo_children():
             item.destroy()
 
