@@ -78,51 +78,71 @@ class window():
 
         self.Frame2 = tk.Frame(self.window,bg="#D9D9D9")
         self.Frame2.pack(expand=True,side="bottom")
+        self.Frame3 = tk.Frame(self.window,bg="red")
+        self.Frame3.pack(expand=True,side="bottom")
 
         self.window.mainloop()
         
-    def parce_data(self,s):
+    def parse_data(self,s):
         s = s.get()
+        
         i = 0
         while s[i]==' ':
             s=s[i+1:]
+            
         my_list = [int(x) for x in re.split(r"\D+", s)]
+        
         if(len(my_list)<2 or len(my_list)>2 or my_list[0]<1 or my_list[1]<1):
             raise
+        
         return my_list
         
     def get_Data(self):
         try: 
             self.currResult=0
             
-            self.SSS = self.parce_data(self.entrySSS)
-            self.B1 = self.parce_data(self.entryB1)
-            self.B2= self.parce_data(self.entryB2)
-            print(self.entrySSS.get())
+            self.SSS = self.parse_data(self.entrySSS)
+            self.B1 = self.parse_data(self.entryB1)
+            self.B2= self.parse_data(self.entryB2)
+            
+            if( self.B1 ==  self.B2):
+                raise
+
         except:
-            messagebox.showerror("Error")
+            messagebox.showerror("Error","check entered data")
             return False
-        return
+        
+        return True
 
     def Uninformed(self):
-        self.get_Data()
+        if not self.get_Data():
+            return
         bombList=[self.B1,self.B2]
         self.Results = logic("uninformed",self.SSS,bombList)
-        print(self.Results)
         self.Update()
         
     def informed(self):
-        self.get_Data()   
-        self.Results = logic("informed",self.SSS,[self.B1,self.B2])
+        if not self.get_Data():
+            return
+        bombList=[self.B1,self.B2]
+        self.Results = logic("informed",self.SSS,bombList)
         self.Update()
+        
+    def reset(self,frame):
+        for item in frame.winfo_children():
+            item.destroy()
     
     def Update(self):
         if self.currResult==len(self.Results):
             messagebox.showinfo("info","this is the last solution")
             return
         
-        for item in self.Frame2.winfo_children():
-            item.destroy()
+        if len(self.Results)==0:
+            messagebox.showwarning("warning","no solutions found")
+            return
+        
+        self.reset(self.Frame2)
+        self.reset(self.Frame3)
 
         # square = tk.Frame(self.Frame2,bg="#623737",width=50,height=50)
         # bomb = tk.Frame(self.Frame2,bg="black",width=50,height=50)
@@ -132,6 +152,7 @@ class window():
             
         for i in range(self.SSS[0]):
             for j in range(self.SSS[1]):
+                
                 curr = self.Results[self.currResult][(i*self.SSS[1])+j]
                 
                 if curr == '!' : 
@@ -143,16 +164,19 @@ class window():
                 if curr=='X':
                     error = tk.Frame(square,bg="red",width=30,height=30)
                     error.pack(padx=10,pady=10)
-                    
+                
+                #lighter
                 elif curr=='V':
                     domino = tk.Frame(square,bg="#DEDEDE",width=30,height=30)
                     domino.pack(side='bottom', padx=10, pady=10 , fill="none")
-                    
+                
+                #darker
                 elif curr=='H':
                     domino = tk.Frame(square,bg="#6B6B6B",width=30,height=30)
                     domino.pack(side='bottom', padx=10, pady=10 , fill="none")
 
-                    
+        label = tk.Label(self.Frame3,text="Current solution: {}".format(self.currResult+1),bg="#D9D9D9",foreground="#623737",font="Arial 15 bold")
+        label.pack()
         self.currResult = self.currResult+1
         return
         

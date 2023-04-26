@@ -94,35 +94,80 @@ init_uninformed(Size,BombLocations,Goal):-
     create_space(Size,BombLocations,InitialState),
     uninformed_search([[InitialState,[]]],[],Size,Goal).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% informed_search(Open, _, Size, CurrentState):-
-%     get_state(Open, CurrentState, _),
-%     is_goal(CurrentState,Size).
+informed_search(Open, _, Size,  [CurrentState,Parent,HuresticCost]):-
+    get_best_state(Open, [CurrentState,Parent,HuresticCost], _),
+    is_goal(CurrentState,Size).
 
 
-% informed_search(Open, Closed, Size, Goal):-
-%     get_best_state(Open, CurrentNode, TmpOpen),
-%     get_all_valid_children_informed(CurrentNode, Size, TmpOpen, Closed, Goal, Children),
-%     add_children(Children, TmpOpen, NewOpen),
-%     append(Closed, CurrentNode, NewClosed),
-%     uninformed_search(NewOpen, NewClosed, Size, Goal).
+informed_search(Open, Closed, Size, Goal):-
+    get_best_state(Open, CurrentNode, TmpOpen),
+    % write(CurrentNode),nl,
+    get_all_valid_children_informed(CurrentNode, Size, TmpOpen, Closed, Children),
+    add_children(Children, TmpOpen, NewOpen),
+    append(Closed, CurrentNode, NewClosed),
+    informed_search(NewOpen, NewClosed, Size, Goal).
 
 
-% get_best_state(Open, Node, NewOpen):-
+get_best_state(Open, Node, NewOpen):-
+    find_min(Open,Node),
+    delete(Open,Node,NewOpen).
 
 
-% get_all_valid_children_informed(Node, Size, Open, Closed, Goal, Children):-
-%     findall(Next, get_next_state_informed(Node, Size, Open, Closed, Goal, Next), Children).
+find_min([Node],Node):-!.
+find_min([Head|T], Min):-
+    find_min(T, TmpMin),
+    Head = [_,_,HeadH],
+    TmpMin = [_,_,TmpH],
+    (TmpH < HeadH -> Min = TmpMin,! ; Min = Head).
 
 
-
-% get_next_state(State, Size, Open, Closed, Next):-
-%     place_domino(State, Size, Next),
-%     not(member(Next, Open)),
-%     not(member(Next, Closed)),
-%     is_okay(Next).
+get_all_valid_children_informed(Node, Size, Open, Closed, Children):-
+    findall(Next, get_next_state_informed(Node, Size, Open, Closed, Next), Children).
 
 
+get_next_state_informed([State,_,_], Size, Open, Closed, [Next,State,HuresticCost]):-
+    place_domino(State, Size, Next),
+    heuristic_value(Size,Next,HuresticCost),
+    not(member([Next,_,_], Open)),
+    not(member([Next,_,_], Closed)),
+    is_okay(Next).
 
-% init_informed(Size,BombLocations,Goal):-
-%     create_space(Size,BombLocations,InitialState),
-%     informed_search([InitialState],[],Size,Goal).
+
+heuristic_value(Size,Next,HuresticCost):-
+    count_invalid(Next,Next,0,Size,0,HuresticCost),!.
+
+
+count_invalid(_,[],_,_,HuresticCost,HuresticCost).
+
+count_invalid(State,["-"|T],Index,Size,Cost,HuresticCost):-
+    % write("test"),
+    Size = [_|[Y|_]],
+    IndexLeft is Index-1,
+    IndexRight is Index+1,
+    IndexUp is Index-Y,
+    IndexDown is Index+Y,
+    (
+        not(0 is Index mod Y ),nth0(IndexLeft,State,"-"),!;
+        not(0 is IndexRight mod Y ),nth0(IndexRight,State,"-"),!;
+        nth0(IndexUp,State,"-"),!;
+        nth0(IndexDown,State,"-"),!
+    ),
+    NewIndex is Index+1,
+    count_invalid(State,T,NewIndex,Size,Cost,HuresticCost).
+
+
+count_invalid(State,["-"|T],Index,Size,Cost,HuresticCost):-
+    % write("wtf"),
+    NewCost is Cost+1,
+    NewIndex is Index+1,
+    count_invalid(State,T,NewIndex,Size,NewCost,HuresticCost).
+
+
+count_invalid(State,[_|T],Index,Size,Cost,HuresticCost):-
+    NewIndex is Index+1,
+    count_invalid(State,T,NewIndex,Size,Cost,HuresticCost).
+
+
+init_informed(Size,BombLocations,Goal):-
+    create_space(Size,BombLocations,InitialState),
+    informed_search([[InitialState,[],0]],[],Size,Goal).
