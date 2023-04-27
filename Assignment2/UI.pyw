@@ -3,19 +3,19 @@ from pyswip import *
 #pip install git+https://github.com/yuce/pyswip@master#egg=pyswip
 import tkinter as tk
 import re
-file_name = 'Assigment.pl'
 
 def logic(type,SSS,BombsLocations)->list:
-    prolog = Prolog()
-    prolog.consult(file_name)
+    
     init_uninformed = Functor("init_uninformed", 3)
     init_informed = Functor("init_informed",3)
         
+    prolog = Prolog()
+    prolog.consult("uninformed.pl","informed.pl")
     Goal = Variable()
     
     if type=="uninformed":
         q = Query(init_uninformed(SSS,BombsLocations,Goal))
-
+        
     elif type=="informed":
         q = Query(init_informed(SSS,BombsLocations,Goal))
         
