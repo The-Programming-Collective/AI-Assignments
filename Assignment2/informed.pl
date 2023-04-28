@@ -129,6 +129,13 @@ count_invalid(State,[_|T],Index,Size,Cost,HuresticCost):-
     count_invalid(State,T,NewIndex,Size,Cost,HuresticCost).
 
 
+add_children(Children, Open, NewOpen):-
+    append(Open, Children, NewOpen).
+
+
+is_okay(_):-true.
+
+
 init_informed(Size,BombLocations,Goal):-
     create_space(Size,BombLocations,InitialState),
     informed_search([[InitialState,[],0]],[],Size,Goal).
