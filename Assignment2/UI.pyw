@@ -6,31 +6,27 @@ import re
 
 def logic(type,SSS,BombsLocations)->list:
     
+    init_uninformed = Functor("init_uninformed", 3)
+    init_informed = Functor("init_informed",3)
+        
     prolog = Prolog()
     prolog.consult("uninformed.pl")
     prolog.consult("informed.pl")
+    Goal = Variable()
     
     if type=="uninformed":
-        q = "init_uninformed"
+        q = Query(init_uninformed(SSS,BombsLocations,Goal))
         
     elif type=="informed":
-        q = "init_informed"
-    
-    #format bombslocations to string
-    bombs="["
-    for i in range(len(BombsLocations)):
-        bombs = bombs + "[{},{}],".format(BombsLocations[i][0],BombsLocations[i][1])
-    bombs = bombs[:-1]
-    bombs = bombs + "]"
-
-    q = q+"([{},{}],{},Goal)".format(SSS[0],SSS[1],bombs)
-    
+        q = Query(init_informed(SSS,BombsLocations,Goal))
+        
     OutputList = []
 
-    for sol in  prolog.query(q):
-        bytelist = sol["Goal"][0]
+    while q.nextSolution():
+        bytelist = Goal.get_value()[0]
         stringlist=[x.decode('utf-8') for x in bytelist]
         OutputList.append(stringlist)
+    q.closeQuery()
     return OutputList
 
 
