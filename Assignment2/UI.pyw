@@ -66,19 +66,20 @@ class window():
         self.entryB2 = tk.Entry(self.Frame1,border=0)
         self.entryB2.grid(row=2,column=1)
         #######################################
-        buttonUninformed = tk.Button(self.Frame1,text="uninformed",border=0,bg="#7B6585",foreground="white",width=15,command=self.Uninformed)
+        buttonUninformed = tk.Button(self.Frame1,text="uninformed",border=0,bg="#7B6585",foreground="white",width=15,command=lambda :self.search("uninformed"))
         buttonUninformed.grid(row = 0, column=3,padx=10)
 
         buttonNext = tk.Button(self.Frame1,text="Next",border=0,bg="#7B6585",foreground="white",width=15,command=self.Update)
         buttonNext.grid(row = 1, column=3,padx=10)
 
-        buttonInformed = tk.Button(self.Frame1,text="informed",border=0,bg="#7B6585",foreground="white",width=15,command=self.informed)
+        buttonInformed = tk.Button(self.Frame1,text="informed",border=0,bg="#7B6585",foreground="white",width=15,command=lambda :self.search("informed"))
         buttonInformed.grid(row = 2, column=3,padx=10)
 
         self.Frame1.pack(fill="both",side="top")
 
         self.Frame2 = tk.Frame(self.window,bg="#D9D9D9")
         self.Frame2.pack(expand=True,side="bottom")
+        
         self.Frame3 = tk.Frame(self.window,bg="red")
         self.Frame3.pack(expand=True,side="bottom")
 
@@ -115,19 +116,20 @@ class window():
         
         return True
 
-    def Uninformed(self):
+
+    def search(self,s):
         if not self.get_Data():
             return
+        
         bombList=[self.B1,self.B2]
-        self.Results = logic("uninformed",self.SSS,bombList)
+        self.Results = logic(s,self.SSS,bombList)
+        
+        if len(self.Results)==0:
+            messagebox.showerror("Error","check entered data")
+            return
+        
         self.Update()
         
-    def informed(self):
-        if not self.get_Data():
-            return
-        bombList=[self.B1,self.B2]
-        self.Results = logic("informed",self.SSS,bombList)
-        self.Update()
         
     def reset(self,frame):
         for item in frame.winfo_children():

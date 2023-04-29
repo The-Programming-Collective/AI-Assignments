@@ -62,7 +62,6 @@ informed_search(Open, _, Size,  [CurrentState,Parent,HuresticCost]):-
 
 informed_search(Open, Closed, Size, Goal):-
     get_best_state(Open, CurrentNode, TmpOpen),
-    % write(CurrentNode),nl,
     get_all_valid_children_informed(CurrentNode, Size, TmpOpen, Closed, Children),
     add_children(Children, TmpOpen, NewOpen),
     append(Closed, CurrentNode, NewClosed),
@@ -100,8 +99,8 @@ heuristic_value(Size,Next,HuresticCost):-
 
 count_invalid(_,[],_,_,HuresticCost,HuresticCost).
 
+
 count_invalid(State,["-"|T],Index,Size,Cost,HuresticCost):-
-    % write("test"),
     Size = [_|[Y|_]],
     IndexLeft is Index-1,
     IndexRight is Index+1,
@@ -118,7 +117,6 @@ count_invalid(State,["-"|T],Index,Size,Cost,HuresticCost):-
 
 
 count_invalid(State,["-"|T],Index,Size,Cost,HuresticCost):-
-    % write("wtf"),
     NewCost is Cost+1,
     NewIndex is Index+1,
     count_invalid(State,T,NewIndex,Size,NewCost,HuresticCost).
