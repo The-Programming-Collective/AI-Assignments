@@ -27,7 +27,7 @@ place_bombs([ [X|[Y|_] ] |T],YCoord,TempSpace,Space):-
     place_bombs(T,YCoord,TempTempSpace,Space).
 
 
-place_domino(State,Size,Next):-
+place_domino(State,Size,Next,1):-
     vertical(Size, State, Next); 
     horizontal(Size, State, Next).
 
@@ -51,13 +51,35 @@ horizontal([_|[Y|_]], State, Next):-
 
 %if no more dominos can be places then its goal
 is_goal(State,Size):-
-    not(place_domino(State,Size,_)).
+    not(place_domino(State,Size,_,_)).
 
 
+:- dynamic numDominos_variable/1.
+
+
+set_numDominos_variable(Value):-
+    retractall(numDominos_variable(_)),
+    assert(numDominos_variable(Value)).
+
+
+get_numDominos_variable(Value):-
+    numDominos_variable(Value).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-informed_search(Open, _, Size,  [CurrentState,Parent,HuresticCost]):-
-    get_best_state(Open, [CurrentState,Parent,HuresticCost], _),
-    is_goal(CurrentState,Size).
+informed_search(Open, _, Size, [CurrentState,_,HuresticCost,DominoNum]):-
+    get_best_state(Open, [CurrentState,_,HuresticCost,DominoNum], _),
+    is_goal(CurrentState,Size),get_numDominos_variable(Var),(
+    (
+        Var < DominoNum,
+        set_numDominos_variable(DominoNum),
+        write(DominoNum),write(" is the max number of dominos.")
+    );
+    (
+        Var == DominoNum
+    );
+    (
+        fail
+    ))
+    .
 
 
 informed_search(Open, Closed, Size, Goal):-
@@ -76,8 +98,8 @@ get_best_state(Open, Node, NewOpen):-
 find_min([Node],Node):-!.
 find_min([Head|T], Min):-
     find_min(T, TmpMin),
-    Head = [_,_,HeadH],
-    TmpMin = [_,_,TmpH],
+    Head = [_,_,HeadH,_],
+    TmpMin = [_,_,TmpH,_],
     (TmpH < HeadH -> Min = TmpMin,! ; Min = Head).
 
 
@@ -85,11 +107,12 @@ get_all_valid_children_informed(Node, Size, Open, Closed, Children):-
     findall(Next, get_next_state_informed(Node, Size, Open, Closed, Next), Children).
 
 
-get_next_state_informed([State,_,_], Size, Open, Closed, [Next,State,HuresticCost]):-
-    place_domino(State, Size, Next),
+get_next_state_informed([State,_,_,OldDominoNum], Size, Open, Closed, [Next,State,HuresticCost,NewDominoNum]):-
+    place_domino(State, Size, Next, DominoNum),
+    NewDominoNum is OldDominoNum+DominoNum,
     heuristic_value(Size,Next,HuresticCost),
-    not(member([Next,_,_], Open)),
-    not(member([Next,_,_], Closed)),
+    not(member([Next,_,_,_], Open)),
+    not(member([Next,_,_,_], Closed)),
     is_okay(Next).
 
 
@@ -136,4 +159,5 @@ is_okay(_):-true.
 
 init_informed(Size,BombLocations,Goal):-
     create_space(Size,BombLocations,InitialState),
-    informed_search([[InitialState,[],0]],[],Size,Goal).
+    set_numDominos_variable(-1),
+    informed_search([[InitialState,[],0,0]],[],Size,Goal).

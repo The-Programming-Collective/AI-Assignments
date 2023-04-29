@@ -4,11 +4,13 @@ from pyswip import *
 import tkinter as tk
 import re
 
+MaxDominos = -1
+
 def logic(type,SSS,BombsLocations)->list:
-    
+    global MaxDominos
     init_uninformed = Functor("init_uninformed", 3)
     init_informed = Functor("init_informed",3)
-        
+
     prolog = Prolog()
     prolog.consult("uninformed.pl")
     prolog.consult("informed.pl")
@@ -16,6 +18,8 @@ def logic(type,SSS,BombsLocations)->list:
     
     if type=="uninformed":
         q = Query(init_uninformed(SSS,BombsLocations,Goal))
+        MaxDominos = -1
+
         
     elif type=="informed":
         q = Query(init_informed(SSS,BombsLocations,Goal))
@@ -27,6 +31,12 @@ def logic(type,SSS,BombsLocations)->list:
         stringlist=[x.decode('utf-8') for x in bytelist]
         OutputList.append(stringlist)
     q.closeQuery()
+
+    if type=="informed":
+        x = list(prolog.query("get_numDominos_variable(Value)"))
+        MaxDominos = x[0]["Value"]
+
+    
     return OutputList
 
 
@@ -80,7 +90,7 @@ class window():
         self.Frame2 = tk.Frame(self.window,bg="#D9D9D9")
         self.Frame2.pack(expand=True,side="bottom")
         
-        self.Frame3 = tk.Frame(self.window,bg="red")
+        self.Frame3 = tk.Frame(self.window,bg="#D9D9D9")
         self.Frame3.pack(expand=True,side="bottom")
 
         self.window.mainloop()
@@ -178,6 +188,10 @@ class window():
                     domino = tk.Frame(square,bg="#6B6B6B",width=30,height=30)
                     domino.pack(side='bottom', padx=10, pady=10 , fill="none")
 
+        if MaxDominos>-1:
+            label = tk.Label(self.Frame3,text="Maximum number of dominos: {}".format(MaxDominos),bg="#D9D9D9",foreground="#623737",font="Arial 15 bold")
+            label.pack()
+        
         label = tk.Label(self.Frame3,text="Current solution: {}".format(self.currResult+1),bg="#D9D9D9",foreground="#623737",font="Arial 15 bold")
         label.pack()
         self.currResult = self.currResult+1
