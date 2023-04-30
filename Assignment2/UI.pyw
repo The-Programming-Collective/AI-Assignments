@@ -27,7 +27,7 @@ def logic(type,SSS,BombsLocations)->list:
     OutputList = []
 
     while q.nextSolution():
-        bytelist = Goal.get_value()[0]
+        bytelist = Goal.get_value()
         stringlist=[x.decode('utf-8') for x in bytelist]
         OutputList.append(stringlist)
     q.closeQuery()

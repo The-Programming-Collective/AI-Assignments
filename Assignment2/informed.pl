@@ -65,8 +65,8 @@ set_numDominos_variable(Value):-
 get_numDominos_variable(Value):-
     numDominos_variable(Value).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-informed_search(Open, _, Size, [CurrentState,_,HuresticCost,DominoNum]):-
-    get_best_state(Open, [CurrentState,_,HuresticCost,DominoNum], _),
+informed_search(Open, _, Size, CurrentState):-
+    get_best_state(Open, [CurrentState,_,_,DominoNum], _),
     is_goal(CurrentState,Size),get_numDominos_variable(Var),(
     (
         Var < DominoNum,

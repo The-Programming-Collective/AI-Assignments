@@ -55,8 +55,8 @@ is_goal(State,Size):-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-uninformed_search(Open, _, Size, [CurrentState,Parent]):-
-    get_state(Open,[CurrentState,Parent], _),
+uninformed_search(Open, _, Size, CurrentState):-
+    get_state(Open,[CurrentState,_], _),
     is_goal(CurrentState,Size).
 
 
